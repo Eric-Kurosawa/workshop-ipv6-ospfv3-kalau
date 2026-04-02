@@ -1,0 +1,246 @@
+Workshop IPv6 e OSPFv3
+
+1. Habilitação do IPv6 nos roteadores e interfaces - Endereço Link-Local
+
+R1:
+- ipv6 unicast-routing
+- interface range ethernet 0/0 , ethernet 0/3
+- ipv6 enable
+- no shutdown
+
+R2:
+- ipv6 unicast-routing
+- interface range ethernet 0/1 - 2
+- ipv6 enable
+- no shutdown
+
+R3:
+- ipv6 unicast-routing
+- interface range ethernet 0/1 - 2
+- ipv6 enable
+- no shutdown
+
+R4:
+- ipv6 unicast-routing
+- interface range ethernet 0/0 - 2
+- ipv6 enable
+- no shutdown
+
+R5:
+- ipv6 unicast-routing
+- interface range ethernet 0/0 , ethernet 0/3
+- ipv6 enable
+- no shutdown
+
+R6:
+- ipv6 unicast-routing
+- interface range ethernet 0/0 - 2
+- ipv6 enable
+- no shutdown
+
+Comandos de verificação:
+- show ipv6 interface brief
+- ping ipv6 <link-local>
+(informar a interface de saída por se tratar de endereço link-local)
+- show ipv6 interface <interface> <número>
+
+---------------------------------------------------------------------
+
+2. Configuração do endereço Global nas interfaces LAN dos Roteadores R1 e R5 - e Verificação do SLAAC
+
+R1:
+- interface ethernet 0/3
+- ipv6 address 2001:CAFE::1/64
+- shutdown
+- no shutdown
+
+R5:
+- interface ethernet 0/3
+- ipv6 address 2001:FACA::1/64
+- shutdown
+- no shutdown
+
+Comandos de verificação dos VPCs:
+- show ipv6
+- ping ipv6 <IPv6>
+
+---------------------------------------------------------------------
+
+3. Configuração do OSPFv3 nos Roteadores
+
+R1:
+- router ospfv3 10
+- router-id 1.1.1.1
+- address-family ipv6
+- passive-interface ethernet 0/3
+- interface ethernet 0/3
+- ospfv3 10 ipv6 area 16
+- interface ethernet 0/0
+- ospfv3 10 ipv6 area 16
+- ospfv3 10 ipv6 network point-to-point
+
+Comando para verificação do R1:
+- show ipv6 interface ethernet 0/3
+- show ipv6 ospf neighbor
+- show ipv6 route ospf
+
+R2:
+- router ospfv3 10
+- router-id 2.2.2.2
+- interface range ethernet 0/1 - 2
+- ospfv3 10 ipv6 area 0
+- ospfv3 10 ipv6 network point-to-point
+
+Comando para verificação do R2:
+- show ipv6 route ospf
+
+R3:
+- router ospfv3 10
+- router-id 3.3.3.3
+- interface range ethernet 0/1 - 2
+- ospfv3 10 ipv6 area 0
+- ospfv3 10 ipv6 network point-to-point
+
+R4:
+- router ospfv3 10
+- router-id 4.4.4.4
+- interface range ethernet 0/1 - 2
+- ospfv3 10 ipv6 area 0
+- ospfv3 10 ipv6 network point-to-point
+- interface ethernet 0/0
+- ospfv3 10 ipv6 area 45
+- ospfv3 10 ipv6 network point-to-point
+
+R5:
+- router ospfv3 10
+- router-id 5.5.5.5
+- address-family ipv6
+- passive-interface ethernet 0/3
+- interface ethernet 0/3
+- ospfv3 10 ipv6 area 45
+- interface ethernet 0/0
+- ospfv3 10 ipv6 area 45
+- ospfv3 10 ipv6 network point-to-point
+
+Comando para verificação do R5:
+- show ipv6 route ospf
+
+R6:
+- router ospfv3 10
+- router-id 6.6.6.6
+- interface ethernet 0/0
+- ospfv3 10 ipv6 area 16
+- ospfv3 10 ipv6 network point-to-point
+- interface range ethernet 0/1 - 2
+- ospfv3 10 ipv6 area 0
+- ospfv3 10 ipv6 network point-to-point
+
+---------------------------------------------------------------------
+
+4. Configuração das loopbacks dos Roteadores com Unique local (FC)
+
+R1:
+- interface loopback 0
+- ipv6 address FC00:1111::1/64
+- ospfv3 10 ipv6 area 16
+
+R6:
+- interface loopback 0
+- ipv6 address FC00:6666::1/64
+- ospfv3 10 ipv6 area 0
+
+R2:
+- interface loopback 0
+- ipv6 address FC00:2222::1/64
+- ospfv3 10 ipv6 area 0
+
+R3:
+- interface loopback 0
+- ipv6 address FC00:3333::1/64
+- ospfv3 10 ipv6 area 0
+
+R4:
+- interface loopback 0
+- ipv6 address FC00:4444::1/64
+- ospfv3 10 ipv6 area 0
+
+R5:
+- interface loopback 0
+- ipv6 address FC00:5555::1/64
+- ospfv3 10 ipv6 area 45
+
+---------------------------------------------------------------------
+
+5. Configuração do IPv4 no OSPFv3
+
+R1:
+- interface ethernet 0/3
+- ip address 10.91.0.1 255.255.255.0
+- ospfv3 10 ipv4 area 16
+- interface ethernet 0/0
+- ip address 10.16.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 16
+- ospfv3 10 ipv4 network point-to-point
+- router ospfv3 10
+- address-family ipv4 unicast
+- passive-interface e0/3
+
+R2:
+- interface ethernet 0/1
+- ip address 10.62.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/2
+- ip address 10.24.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+
+R3:
+- interface ethernet 0/2
+- ip address 10.63.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/1
+- ip address 10.34.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+
+R4:
+- interface ethernet 0/0
+- ip address 10.45.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 45
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/1
+- ip address 10.34.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/2
+- ip address 10.24.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+
+R5:
+- interface ethernet 0/3
+- ip address 10.112.0.1 255.255.255.0
+- ospfv3 10 ipv4 area 45
+- interface ethernet 0/0
+- ip address 10.45.0.1 255.255.255.252
+- ospfv3 10 ipv4 area 45
+- ospfv3 10 ipv4 network point-to-point
+- router ospfv3 10
+- address-family ipv4 unicast
+- passive-interface e0/3
+
+R6:
+- interface ethernet 0/0
+- ip address 10.16.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 16
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/1
+- ip address 10.62.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
+- interface ethernet 0/2
+- ip address 10.63.0.2 255.255.255.252
+- ospfv3 10 ipv4 area 0
+- ospfv3 10 ipv4 network point-to-point
